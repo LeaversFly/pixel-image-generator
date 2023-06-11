@@ -1,12 +1,34 @@
 <script setup>
-import { AlipayCircleFilled } from '@vicons/antd'
 </script>
 
 <template>
-    <n-icon size="40">
-        121
-        <AlipayCircleFilled />
-    </n-icon>
+    <div class="container">
+        <div class="header">确实，你说的对</div>
+        <div class="content">
+            平山道
+        </div>
+        <div class="footer">成府路</div>
+    </div>
 </template>
 
-<style scoped></style>
+<style lang="scss" scoped>
+.container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+
+    .header {
+        height: 7vh;
+
+        background-color: #fafafc;
+    }
+
+    .content {
+        flex: 1;
+    }
+
+    .footer {
+        height: 6vh;
+    }
+}
+</style>
