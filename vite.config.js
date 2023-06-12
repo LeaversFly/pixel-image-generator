@@ -20,6 +20,7 @@ export default defineConfig({
     vue(),
     // 自动导入组件
     Components({
+      extensions: ['vue'],
       resolvers: [
         NaiveUiResolver()
       ],
