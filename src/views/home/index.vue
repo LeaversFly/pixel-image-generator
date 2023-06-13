@@ -1,5 +1,4 @@
 <script setup>
-import Generator from './components/generator/index.vue'
 </script>
 
 <template>
@@ -8,9 +7,13 @@ import Generator from './components/generator/index.vue'
             <Navbar />
         </div>
         <div class="content">
-            <Generator />
+            <div class="generator-container">
+                <Generator />
+            </div>
         </div>
-        <div class="footer">成府路</div>
+        <div class="footer">
+            <Footer />
+        </div>
     </div>
 </template>
 
@@ -29,7 +32,12 @@ import Generator from './components/generator/index.vue'
     .content {
         flex: 1;
 
-        background-color: orange;
+        .generator-container {
+            width: 1080px;
+            height: 428px;
+            margin: 0 auto;
+            padding: 6%;
+        }
     }
 
     .footer {

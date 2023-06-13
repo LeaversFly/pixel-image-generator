@@ -21,7 +21,7 @@
         align-items: center;
         margin: 0 auto;
         width: 1380px;
-        height: 100%;
+        height: 52px;
 
         .logo {
             width: 100px;

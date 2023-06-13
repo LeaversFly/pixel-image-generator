@@ -9,8 +9,12 @@ export {}
 
 declare module '@vue/runtime-core' {
   export interface GlobalComponents {
+    App: typeof import('./src/App.vue')['default']
     Footer: typeof import('./src/components/footer/index.vue')['default']
+    Generator: typeof import('./src/views/home/components/generator/index.vue')['default']
+    Home: typeof import('./src/views/home/index.vue')['default']
     Navbar: typeof import('./src/components/navbar/index.vue')['default']
+    NButton: typeof import('naive-ui')['NButton']
     NIcon: typeof import('naive-ui')['NIcon']
     NLayout: typeof import('naive-ui')['NLayout']
     NLayoutContent: typeof import('naive-ui')['NLayoutContent']
