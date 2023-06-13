@@ -20,10 +20,8 @@ export default defineConfig({
     vue(),
     // 自动导入组件
     Components({
-      extensions: ['vue'],
-      resolvers: [
-        NaiveUiResolver()
-      ],
+      dirs: ['src'],  //src下的组件均自动导入
+      resolvers: [NaiveUiResolver()],
     }),
     // 压缩图片
     // imagemin(),
