@@ -7,9 +7,9 @@ import { ReloadOutlined } from '@vicons/antd'
         <div class="generator generator-background">
 
         </div>
-        <n-button circle size="large" class="btn">
+        <div class="btn">
             <n-icon :component="ReloadOutlined" />
-        </n-button>
+        </div>
     </div>
 </template>
 
@@ -33,9 +33,18 @@ import { ReloadOutlined } from '@vicons/antd'
     }
 
     .btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 60px;
+        height: 60px;
         position: absolute;
-        right: -60px;
-        bottom: -20px;
+        right: -30px;
+        bottom: 0;
+
+        font-size: 50px;
+        border-radius: 50%;
+        background-color: #808080;
     }
 }
 </style>
