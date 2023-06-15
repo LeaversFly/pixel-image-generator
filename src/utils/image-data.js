@@ -1,5 +1,5 @@
 export function getImageDataFromSrc(src) {
-    return new Promise < ImageData > ((resolve, reject) => {
+    return new Promise((resolve, reject) => {
         const image = new Image()
         image.src = src
         image.onload = () => {

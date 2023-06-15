@@ -6,9 +6,12 @@ export default class Pixelator {
 
     config
     target
-    generate(source, config)
-    stop()
-    dispose()
+    generate(source, config) {
+    }
+    stop() {
+    }
+    dispose() {
+    }
 
     toCanvas(canvas) {
         const ctx = canvas.getContext('2d')
