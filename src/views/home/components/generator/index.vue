@@ -1,9 +1,10 @@
 <script setup>
-import { CloudSyncOutlined, CloudUploadOutlined } from '@vicons/antd'
+import { CloudSyncOutlined } from '@vicons/antd'
 import { onMounted, ref } from 'vue'
 import { createPixelator } from '../../../../utils/pixelator'
 import useLastedToken from '../../../../hooks/useLasteToken'
 import { useMessage } from 'naive-ui'
+import { getImageDataFromSrc } from '@/utils/image-data'
 
 const message = useMessage()
 
@@ -17,7 +18,7 @@ const imageData = ref(null)
 const appState = ref(AppState.Normal)
 const hasResult = ref(false)
 const canvasRef = ref(null)
-const pixelatorRef = ref(createPixelator(onPixelatorUpdate))
+const uploadRef = ref(null)
 
 const onPixelatorUpdate = (finish) => {
     canvasRef.value && pixelatorRef.value.toCanvas(canvasRef.value)
@@ -25,7 +26,10 @@ const onPixelatorUpdate = (finish) => {
     finish && (appState.value = AppState.Normal)
 }
 
-pixelatorRef.value.onUpdate = onPixelatorUpdate
+const pixelatorRef = ref(createPixelator(onPixelatorUpdate))
+
+
+pixelatorRef.value['onUpdate'] = onPixelatorUpdate
 
 onMounted(() => {
     if (canvasRef) {
@@ -44,15 +48,15 @@ const { getLastedToken, comsumeToken } = useLastedToken()
 const tryLoadBlob = async (blob, token) => {
     const url = URL.createObjectURL(blob)
     try {
-        const imageData = await GetImageDataFromSrc(url)
+        const imageData = await getImageDataFromSrc(url)
         comsumeToken(token, () => {
             imageData.value = imageData
             hasResult.value = false
             appState.value = AppState.Normal
         })
-    } catch {
+    } catch (err) {
         comsumeToken(token, () => {
-            appstate.value = AppState.Normal
+            appState.value = AppState.Normal
         })
         message.error('图片解析错误!')
     }
@@ -67,7 +71,7 @@ const onClickImport = () => {
 const onClickImportOutside = () => {
     importDropdownVisible.value = false
 }
-const onImportFromFile = () => {
+const onImportFromFile = ({ file }) => {
     importDropdownVisible.value = false
     const token = getLastedToken()
     const input = document.createElement('input')
@@ -80,6 +84,9 @@ const onImportFromFile = () => {
             await tryLoadBlob(input.files.item(0), token)
         }
     }
+}
+const submitUpload = () => {
+    uploadRef.value.submit()
 }
 
 const onImportFromClipboard = async () => {
@@ -145,21 +152,13 @@ const onImportOk = async ({ url }) => {
     <div class="generator-background">
         <div class="generator generator-background">
             <div class="generator-container">
-                <n-upload multiple directory-dnd action="https://www.mocky.io/v2/5e4bafc63100007100d8b70f" :max="5"
-                    class="upload">
-                    <n-upload-dragger>
-                        <div style="margin-bottom: 12px">
-                            <n-icon size="48" :depth="3" :component="CloudUploadOutlined" />
-                        </div>
-                        <n-text style="font-size: 16px">
-                            点击或者拖动文件到该区域来上传
-                        </n-text>
-                        <n-p depth="3" style="margin: 8px 0 0 0">
-                            请不要上传敏感数据，比如你的银行卡号和密码，信用卡号有效期和安全码
-                        </n-p>
-                    </n-upload-dragger>
-                </n-upload>
+                <n-button type="info" @click="onImportFromFile">
+                    Info
+                </n-button>
                 <n-slider v-model:value="value" :step="10" class="slider" />
+                <n-button type="info" @click="submitUpload">
+                    Info
+                </n-button>
             </div>
         </div>
         <div class="btn">
