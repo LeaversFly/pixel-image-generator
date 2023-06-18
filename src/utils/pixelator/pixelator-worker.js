@@ -25,6 +25,7 @@ export default class PixelatorWorker extends Pixelator {
             source,
             config,
         }
+        console.log(message);
         this.worker.postMessage(message)
         this.generating = true
     }

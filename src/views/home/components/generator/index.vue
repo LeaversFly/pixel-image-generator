@@ -1,6 +1,6 @@
 <script setup>
 import { CloudSyncOutlined } from '@vicons/antd'
-import { onMounted, ref } from 'vue'
+import { ref, watch } from 'vue'
 import { createPixelator } from '../../../../utils/pixelator'
 import useLastedToken from '../../../../hooks/useLasteToken'
 import { useMessage } from 'naive-ui'
@@ -21,18 +21,19 @@ const canvasRef = ref(null)
 const uploadRef = ref(null)
 
 const onPixelatorUpdate = (finish) => {
-    canvasRef.value && pixelatorRef.value.toCanvas(canvasRef.value)
+    canvasRef.value && pixelatorRef.toCanvas(canvasRef.value)
     hasResult.value = true
     finish && (appState.value = AppState.Normal)
 }
 
-const pixelatorRef = ref(createPixelator(onPixelatorUpdate))
+const pixelatorRef = createPixelator(onPixelatorUpdate)
 
+pixelatorRef['onUpdate'] = onPixelatorUpdate
 
-pixelatorRef.value['onUpdate'] = onPixelatorUpdate
-
-onMounted(() => {
-    if (canvasRef) {
+watch(imageData, () => {
+    console.log(canvasRef.value);
+    console.log(imageData.value);
+    if (canvasRef.value) {
         if (imageData.value) {
             const canvas = canvasRef.value
             const ctx = canvas.getContext('2d')
@@ -41,7 +42,7 @@ onMounted(() => {
             ctx.putImageData(imageData.value, 0, 0)
         }
     }
-})
+}, { immediate: true })
 
 const { getLastedToken, comsumeToken } = useLastedToken()
 
@@ -85,8 +86,14 @@ const onImportFromFile = ({ file }) => {
         }
     }
 }
-const submitUpload = () => {
-    uploadRef.value.submit()
+const submitUpload = (config) => {
+    if (!imageData.value) return
+    pixelatorRef.generate(imageData.value, {
+        size: 16,
+        k: 8,
+        mode: 'rgba'
+    })
+    appState.value = AppState.Generating
 }
 
 const onImportFromClipboard = async () => {
@@ -120,32 +127,30 @@ const onImportOk = async ({ url }) => {
     }
 }
 
-// const { importModal, openImportModal } = useImportModal(onImportOk)
-// const onImportFromUrl = useCallback(() => {
-//     setImportDropdownVisible(false)
-//     openImportModal()
-// }, [openImportModal])
-// const onGenerateOk = useCallback(
-//     (config) => {
-//         if (!imageData) return
-//         pixelatorRef.current.generate(imageData, config)
-//         setAppState(AppState.Generating)
-//     },
-//     [imageData],
-// )
-// const onClickStop = useCallback(() => {
-//     pixelatorRef.current.stop()
-//     setAppState(AppState.Normal)
-// }, [])
-// const { generateModal, openGenerateModal } = useGenerateModal(
-//     imageData?.width ?? 0,
-//     imageData?.height ?? 0,
-//     onGenerateOk,
-// )
-// const onExportOk = useCallback((config) => {
-//     pixelatorRef.current.export(config)
-// }, [])
-// const { openExportModal, exportModal } = useExportModal(onExportOk)
+// 生成选项表单
+const imageWidth = 100
+const imageHeight = 100
+const modes = ['rgba', 'hsva']
+const sizeValid = ref(imageWidth % 16 === 0 && imageHeight % 16 === 0)
+const kSafe = ref(true)
+const formApiRef = ref({
+    size: 16,
+    k: 8,
+    mode: 'rgba'
+})
+
+const onSizeChange = (value) => {
+    sizeValid.value = imageWidth % value === 0 && imageHeight % value === 0
+}
+const onKChange = (value) => {
+    kSafe.value = value <= 64
+}
+const onModalOk = async () => {
+    if (formApiRef.value) {
+        const config = await formApiRef.value.validate()
+        onOk?.({ ...config })
+    }
+}
 </script>
 
 <template>
@@ -153,13 +158,34 @@ const onImportOk = async ({ url }) => {
         <div class="generator generator-background">
             <div class="generator-container">
                 <n-button type="info" @click="onImportFromFile">
-                    Info
+                    导入
                 </n-button>
-                <n-slider v-model:value="value" :step="10" class="slider" />
+                <n-form ref="formRef" inline :label-width="80" :model="formApiRef">
+                    <n-form-item label="颜色大小" path="formApiRef.size">
+                        <n-slider v-model:value="formApiRef.size" :step="5" />
+                    </n-form-item>
+                    <n-form-item label="像素数量" path="formApiRef.k">
+                        <n-slider v-model:value="formApiRef.k" :step="5" />
+                    </n-form-item>
+                    <n-form-item label="模式" path="formApiRef.mode">
+                        <n-radio-group v-model:value="formApiRef.mode" name="radiogroup">
+                            <n-space>
+                                <n-radio v-for="mode in modes" :key="mode" :value="mode">
+                                    {{ mode }}
+                                </n-radio>
+                            </n-space>
+                        </n-radio-group>
+                    </n-form-item>
+                </n-form>
+                <pre>{{ JSON.stringify(formApiRef, null, 2) }}</pre>
                 <n-button type="info" @click="submitUpload">
-                    Info
+                    生成
                 </n-button>
             </div>
+        </div>
+        <!-- 画布 -->
+        <div>
+            <canvas ref='canvasRef' />
         </div>
         <div class="btn">
             <n-icon :component="CloudSyncOutlined" />
