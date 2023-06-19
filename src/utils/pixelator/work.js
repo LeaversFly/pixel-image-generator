@@ -8,6 +8,7 @@ export default class PixelatorWorker extends Pixelator {
         super(onUpdate)
         this.worker.onmessage = (evt) => {
             const message = evt.data
+            console.log(message);
             switch (message.type) {
                 case 'update':
                     this.target = message.result
@@ -25,7 +26,6 @@ export default class PixelatorWorker extends Pixelator {
             source,
             config,
         }
-        console.log(message);
         this.worker.postMessage(message)
         this.generating = true
     }

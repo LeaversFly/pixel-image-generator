@@ -1,7 +1,7 @@
 import Pixelator from './Pixelator'
 import PixelatorMain from './main'
-import PixelatorWorker from './pixelator-worker'
+import PixelatorWorker from './work'
 
 export const createPixelator = onUpdate => {
-    return new PixelatorWorker(onUpdate)
+    return new PixelatorMain(onUpdate)
 }

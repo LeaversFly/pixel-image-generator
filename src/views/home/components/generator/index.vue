@@ -1,10 +1,10 @@
 <script setup>
 import { CloudSyncOutlined } from '@vicons/antd'
-import { ref, watch } from 'vue'
+import { reactive, ref, watch } from 'vue'
 import { createPixelator } from '../../../../utils/pixelator'
 import useLastedToken from '../../../../hooks/useLasteToken'
 import { useMessage } from 'naive-ui'
-import { getImageDataFromSrc } from '@/utils/image-data'
+import { getImageDataFromSrc } from '../../../../utils/image-data'
 
 const message = useMessage()
 
@@ -14,32 +14,31 @@ const AppState = {
     Generating: 'Generating',
 }
 
-const imageData = ref(null)
+const imageData = reactive({
+    data: new Image()
+})
 const appState = ref(AppState.Normal)
 const hasResult = ref(false)
 const canvasRef = ref(null)
-const uploadRef = ref(null)
 
 const onPixelatorUpdate = (finish) => {
-    canvasRef.value && pixelatorRef.toCanvas(canvasRef.value)
+    canvasRef.value && pixelatorRef.value.toCanvas(canvasRef.value)
     hasResult.value = true
     finish && (appState.value = AppState.Normal)
 }
 
-const pixelatorRef = createPixelator(onPixelatorUpdate)
+const pixelatorRef = ref(createPixelator(onPixelatorUpdate))
 
-pixelatorRef['onUpdate'] = onPixelatorUpdate
+pixelatorRef.value['onUpdate'] = onPixelatorUpdate
 
 watch(imageData, () => {
-    console.log(canvasRef.value);
-    console.log(imageData.value);
     if (canvasRef.value) {
-        if (imageData.value) {
+        if (imageData.data) {
             const canvas = canvasRef.value
             const ctx = canvas.getContext('2d')
-            canvas.width = imageData.value.width
-            canvas.height = imageData.value.height
-            ctx.putImageData(imageData.value, 0, 0)
+            canvas.width = imageData.data.width
+            canvas.height = imageData.data.height
+            ctx.putImageData(imageData.data, 0, 0)
         }
     }
 }, { immediate: true })
@@ -49,9 +48,9 @@ const { getLastedToken, comsumeToken } = useLastedToken()
 const tryLoadBlob = async (blob, token) => {
     const url = URL.createObjectURL(blob)
     try {
-        const imageData = await getImageDataFromSrc(url)
+        const image = await getImageDataFromSrc(url)
         comsumeToken(token, () => {
-            imageData.value = imageData
+            imageData.data = image
             hasResult.value = false
             appState.value = AppState.Normal
         })
@@ -87,12 +86,8 @@ const onImportFromFile = ({ file }) => {
     }
 }
 const submitUpload = (config) => {
-    if (!imageData.value) return
-    pixelatorRef.generate(imageData.value, {
-        size: 16,
-        k: 8,
-        mode: 'rgba'
-    })
+    if (!imageData.data) return
+    pixelatorRef.value.generate(imageData.data, formApiRef.value)
     appState.value = AppState.Generating
 }
 
@@ -157,9 +152,15 @@ const onModalOk = async () => {
     <div class="generator-background">
         <div class="generator generator-background">
             <div class="generator-container">
-                <n-button type="info" @click="onImportFromFile">
-                    导入
-                </n-button>
+                <div class="left">
+                    <n-button type="info" @click="onImportFromFile">
+                        导入
+                    </n-button>
+                    <!-- 画布 -->
+                    <div>
+                        <canvas ref='canvasRef' />
+                    </div>
+                </div>
                 <n-form ref="formRef" inline :label-width="80" :model="formApiRef">
                     <n-form-item label="颜色大小" path="formApiRef.size">
                         <n-slider v-model:value="formApiRef.size" :step="5" />
@@ -182,10 +183,6 @@ const onModalOk = async () => {
                     生成
                 </n-button>
             </div>
-        </div>
-        <!-- 画布 -->
-        <div>
-            <canvas ref='canvasRef' />
         </div>
         <div class="btn">
             <n-icon :component="CloudSyncOutlined" />
@@ -216,6 +213,12 @@ const onModalOk = async () => {
         .generator-container {
             display: flex;
             padding: 0;
+
+            .left {
+                display: flex;
+                width: 100px;
+                height: 100px;
+            }
 
             .upload {
                 flex: 3;
