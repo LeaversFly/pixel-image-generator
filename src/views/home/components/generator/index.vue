@@ -36,8 +36,8 @@ watch(imageData, () => {
         if (imageData.data) {
             const canvas = canvasRef.value
             const ctx = canvas.getContext('2d')
-            canvas.width = imageData.data.width
-            canvas.height = imageData.data.height
+            canvas.setAttribute('width', imageData.data.width)
+            canvas.setAttribute('height', imageData.data.height)
             ctx.putImageData(imageData.data, 0, 0)
         }
     }
@@ -151,41 +151,37 @@ const onModalOk = async () => {
 <template>
     <div class="generator-background">
         <div class="generator generator-background">
-            <div class="generator-container">
+            <div class="container">
                 <div class="left">
-                    <n-button type="info" @click="onImportFromFile">
+                    <n-button type="info" @click="onImportFromFile" class="import">
                         导入
                     </n-button>
                     <!-- 画布 -->
-                    <div>
-                        <canvas ref='canvasRef' />
-                    </div>
+                    <canvas ref='canvasRef' />
                 </div>
-                <n-form ref="formRef" inline :label-width="80" :model="formApiRef">
-                    <n-form-item label="颜色大小" path="formApiRef.size">
-                        <n-slider v-model:value="formApiRef.size" :step="5" />
-                    </n-form-item>
-                    <n-form-item label="像素数量" path="formApiRef.k">
-                        <n-slider v-model:value="formApiRef.k" :step="5" />
-                    </n-form-item>
-                    <n-form-item label="模式" path="formApiRef.mode">
-                        <n-radio-group v-model:value="formApiRef.mode" name="radiogroup">
-                            <n-space>
-                                <n-radio v-for="mode in modes" :key="mode" :value="mode">
-                                    {{ mode }}
-                                </n-radio>
-                            </n-space>
-                        </n-radio-group>
-                    </n-form-item>
-                </n-form>
-                <pre>{{ JSON.stringify(formApiRef, null, 2) }}</pre>
-                <n-button type="info" @click="submitUpload">
-                    生成
-                </n-button>
+                <div class="right">
+                    <n-form ref="formRef" inline :label-width="80" :model="formApiRef">
+                        <n-form-item label="颜色大小" path="formApiRef.size">
+                            <n-slider v-model:value="formApiRef.size" :step="5" />
+                        </n-form-item>
+                        <n-form-item label="像素数量" path="formApiRef.k">
+                            <n-slider v-model:value="formApiRef.k" :step="5" />
+                        </n-form-item>
+                        <n-form-item label="模式" path="formApiRef.mode">
+                            <n-radio-group v-model:value="formApiRef.mode" name="radiogroup">
+                                <n-space>
+                                    <n-radio v-for="mode in modes" :key="mode" :value="mode">
+                                        {{ mode }}
+                                    </n-radio>
+                                </n-space>
+                            </n-radio-group>
+                        </n-form-item>
+                    </n-form>
+                </div>
             </div>
         </div>
         <div class="btn">
-            <n-icon :component="CloudSyncOutlined" />
+            <n-icon :component="CloudSyncOutlined" @click="submitUpload" />
         </div>
     </div>
 </template>
@@ -210,14 +206,24 @@ const onModalOk = async () => {
 
         transform: rotate(6deg);
 
-        .generator-container {
+        .container {
             display: flex;
+            width: 100%;
             padding: 0;
 
             .left {
                 display: flex;
-                width: 100px;
-                height: 100px;
+                width: 70%;
+
+                .import {
+                    position: absolute;
+                    top: -100px;
+                }
+            }
+
+            .right {
+                display: flex;
+                width: 30%;
             }
 
             .upload {
