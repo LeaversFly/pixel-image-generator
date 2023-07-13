@@ -7,9 +7,7 @@
             <Navbar />
         </div>
         <div class="content">
-            <div class="generator-container">
-                <Generator />
-            </div>
+            <Generator />
         </div>
         <div class="footer">
             <Footer />
@@ -23,27 +21,8 @@
     flex-direction: column;
     height: 100vh;
 
-    .header {
-        height: 52px;
-
-        background-color: blue;
-    }
-
     .content {
         flex: 1;
-
-        .generator-container {
-            width: 1080px;
-            height: 428px;
-            margin: 0 auto;
-            padding: 6%;
-        }
-    }
-
-    .footer {
-        height: 52px;
-
-        background-color: grey;
     }
 }
 </style>
