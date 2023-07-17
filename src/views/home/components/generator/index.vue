@@ -1,6 +1,5 @@
 <script setup>
-import { CloudSyncOutlined } from '@vicons/antd'
-import { reactive, ref, watch } from 'vue'
+import { onMounted, reactive, ref, watch } from 'vue'
 import { createPixelator } from '../../../../utils/pixelator'
 import useLastedToken from '../../../../hooks/useLasteToken'
 import { useMessage } from 'naive-ui'
@@ -20,6 +19,29 @@ const imageData = reactive({
 const appState = ref(AppState.Normal)
 const hasResult = ref(false)
 const canvasRef = ref(null)
+const showDropdown = ref(false)
+const options = [
+    {
+        label: '本地导入',
+        key: 0
+    },
+    {
+        label: '剪切板导入',
+        key: 1
+    },
+    {
+        label: 'URL导入',
+        key: 2
+    }
+]
+
+const handleSelect = (key) => {
+    if (key === 0) {
+        onImportFromFile({})
+    } else {
+        message.info(key)
+    }
+}
 
 const onPixelatorUpdate = (finish) => {
     canvasRef.value && pixelatorRef.value.toCanvas(canvasRef.value)
@@ -31,13 +53,29 @@ const pixelatorRef = ref(createPixelator(onPixelatorUpdate))
 
 pixelatorRef.value['onUpdate'] = onPixelatorUpdate
 
+onMounted(() => {
+    onImportOk({ url: './0.jpg' })
+})
+
+const onImportOk = async ({ url }) => {
+    appState.value = AppState.Loading
+    const token = getLastedToken()
+    try {
+        const response = await fetch(url)
+        const blob = await response.blob()
+        await tryLoadBlob(blob, token)
+    } catch {
+        message.error('图片加载失败!')
+    }
+}
+
 watch(imageData, () => {
     if (canvasRef.value) {
         if (imageData.data) {
             const canvas = canvasRef.value
             const ctx = canvas.getContext('2d')
-            canvas.setAttribute('width', imageData.data.width)
-            canvas.setAttribute('height', imageData.data.height)
+            canvas.width = imageData.data.width
+            canvas.height = imageData.data.height
             ctx.putImageData(imageData.data, 0, 0)
         }
     }
@@ -65,12 +103,12 @@ const tryLoadBlob = async (blob, token) => {
 
 const importDropdownVisible = ref(false)
 
-const onClickImport = () => {
-    importDropdownVisible.value = true
-}
-const onClickImportOutside = () => {
-    importDropdownVisible.value = false
-}
+// const onClickImport = () => {
+//     importDropdownVisible.value = true
+// }
+// const onClickImportOutside = () => {
+//     importDropdownVisible.value = false
+// }
 const onImportFromFile = ({ file }) => {
     importDropdownVisible.value = false
     const token = getLastedToken()
@@ -91,81 +129,83 @@ const submitUpload = (config) => {
     appState.value = AppState.Generating
 }
 
-const onImportFromClipboard = async () => {
-    importDropdownVisible.value = false
-    appState.value = AppState.Loading
+// const onImportFromClipboard = async () => {
+//     importDropdownVisible.value = false
+//     appState.value = AppState.Loading
 
-    const token = getLastedToken()
-    try {
-        const items = await navigator.clipboard.read()
-        if (items.length > 0) {
-            const item = items.at(0)
-            const blob = await item.getType(item.types[0])
-            await tryLoadBlob(blob, token)
-        } else {
-            message.error('未读取到内容!')
-        }
-    } catch {
-        message.error('读取剪切板失败!')
-    }
-}
-
-const onImportOk = async ({ url }) => {
-    appState.value = AppState.Loading
-    const token = getLastedToken()
-    try {
-        const response = await fetch(url)
-        const blob = await response.blob()
-        await tryLoadBlob(blob, token)
-    } catch {
-        message.error('图片下载失败!')
-    }
-}
+//     const token = getLastedToken()
+//     try {
+//         const items = await navigator.clipboard.read()
+//         if (items.length > 0) {
+//             const item = items.at(0)
+//             const blob = await item.getType(item.types[0])
+//             await tryLoadBlob(blob, token)
+//         } else {
+//             message.error('未读取到内容!')
+//         }
+//     } catch {
+//         message.error('读取剪切板失败!')
+//     }
+// }
 
 // 生成选项表单
-const imageWidth = 100
-const imageHeight = 100
+// const imageWidth = 100
+// const imageHeight = 100
 const modes = ['rgba', 'hsva']
-const sizeValid = ref(imageWidth % 16 === 0 && imageHeight % 16 === 0)
-const kSafe = ref(true)
+// const sizeValid = ref(imageWidth % 16 === 0 && imageHeight % 16 === 0)
+// const kSafe = ref(true)
 const formApiRef = ref({
     size: 16,
     k: 8,
     mode: 'rgba'
 })
 
-const onSizeChange = (value) => {
-    sizeValid.value = imageWidth % value === 0 && imageHeight % value === 0
-}
-const onKChange = (value) => {
-    kSafe.value = value <= 64
-}
-const onModalOk = async () => {
-    if (formApiRef.value) {
-        const config = await formApiRef.value.validate()
-        onOk?.({ ...config })
-    }
-}
+// const onSizeChange = (value) => {
+//     sizeValid.value = imageWidth % value === 0 && imageHeight % value === 0
+// }
+// const onKChange = (value) => {
+//     kSafe.value = value <= 64
+// }
+// const onModalOk = async () => {
+//     if (formApiRef.value) {
+//         const config = await formApiRef.value.validate()
+//         onOk?.({ ...config })
+//     }
+// }
 </script>
 
 <template>
-    <div class="generator-background">
-        <div class="generator generator-background">
-            <div class="container">
-                <div class="left">
-                    <n-button type="info" @click="onImportFromFile" class="import">
-                        导入
-                    </n-button>
-                    <!-- 画布 -->
-                    <canvas ref='canvasRef' />
+    <div class="generator">
+        <n-layout has-sider sider-placement="right">
+            <!-- 主区域 -->
+            <n-layout-content>
+                <!-- 画布 -->
+                <div class="canvas-box">
+                    <canvas ref='canvasRef' class="canvas" />
                 </div>
-                <div class="right">
-                    <n-form ref="formRef" inline :label-width="80" :model="formApiRef">
-                        <n-form-item label="颜色大小" path="formApiRef.size">
-                            <n-slider v-model:value="formApiRef.size" :step="5" />
+            </n-layout-content>
+            <!-- 侧边栏 -->
+            <n-layout-sider collapse-mode="transform" :collapsed-width="0" show-trigger="arrow-circle"
+                :show-collapsed-content="false" bordered>
+                <div class="sider">
+                    <n-space>
+                        <n-dropdown trigger="hover" size="large" :options="options" @select="handleSelect" class="dropdown">
+                            <n-button ghost>导入</n-button>
+                        </n-dropdown>
+                        <n-button color="#e66162" @click="submitUpload">
+                            生成
+                        </n-button>
+                        <n-button dashed color="#e66162">
+                            导出
+                        </n-button>
+                    </n-space>
+                    <n-divider dashed />
+                    <n-form ref="formRef" inline :model="formApiRef">
+                        <n-form-item :label="'像素大小：' + formApiRef.size" path="formApiRef.size">
+                            <n-slider v-model:value="formApiRef.size" :max="16" :min="2" color="#e66162" />
                         </n-form-item>
-                        <n-form-item label="像素数量" path="formApiRef.k">
-                            <n-slider v-model:value="formApiRef.k" :step="5" />
+                        <n-form-item :label="'颜色数量：' + formApiRef.k" path="formApiRef.k">
+                            <n-slider v-model:value="formApiRef.k" :max="32" :min="8" />
                         </n-form-item>
                         <n-form-item label="模式" path="formApiRef.mode">
                             <n-radio-group v-model:value="formApiRef.mode" name="radiogroup">
@@ -178,86 +218,47 @@ const onModalOk = async () => {
                         </n-form-item>
                     </n-form>
                 </div>
-            </div>
-        </div>
-        <div class="btn">
-            <n-icon :component="CloudSyncOutlined" @click="submitUpload" />
-        </div>
+            </n-layout-sider>
+        </n-layout>
     </div>
 </template>
 
 <style lang="scss" scoped>
-.generator-background {
-    width: 90%;
+.generator {
     height: 100%;
-    margin: 0 auto;
 
-    border: 1px solid #808080;
-    border-radius: 6px;
-    background-color: #f3f3f3;
-    transform: rotate(-6deg);
-    transform-origin: right bottom;
+    .n-layout-content {
+        min-height: calc(100vh - 104px);
+        background-color: #f5f5f5;
 
-    .generator {
-        display: flex;
-        justify-content: space-between;
-        width: 100%;
-        height: 100%;
-
-        transform: rotate(6deg);
-
-        .container {
+        .canvas-box {
             display: flex;
-            width: 100%;
-            padding: 0;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
 
-            .left {
-                display: flex;
-                width: 70%;
+            .canvas {
+                max-height: calc(100vh - 116px);
 
-                .import {
-                    position: absolute;
-                    top: -100px;
-                }
-            }
-
-            .right {
-                display: flex;
-                width: 30%;
-            }
-
-            .upload {
-                flex: 3;
-
-                .n-upload-dragger {
-                    display: flex;
-                    flex-direction: column;
-                    justify-content: center;
-                    height: 428px;
-
-                    border: none;
-                }
-            }
-
-            .slider {
-                flex: 1;
+                border: 1px solid rgba(0, 0, 0, 0.1);
+                border-radius: 1rem;
             }
         }
     }
 
-    .btn {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 60px;
-        height: 60px;
-        position: absolute;
-        right: -10px;
-        bottom: -10px;
+    .n-layout-sider {
+        padding: 24px;
 
-        font-size: 50px;
-        border-radius: 50%;
-        background-color: #808080;
+        .sider {
+            padding-right: 24px;
+
+            .n-form {
+                flex-direction: column;
+                align-items: normal;
+                margin: 12px 0;
+            }
+        }
     }
 }
 </style>
