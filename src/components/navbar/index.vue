@@ -1,12 +1,18 @@
 <script setup>
-
+import { BulbTwotone } from '@vicons/antd'
 </script>
 
 <template>
     <div class="navbar">
         <div class="navbar-container">
             <span class="logo">像素生成器</span>
-            <span class="about">切换白天/黑夜模式</span>
+            <n-button tertiary circle type="info">
+                <template #icon>
+                    <n-icon>
+                        <BulbTwotone />
+                    </n-icon>
+                </template>
+            </n-button>
         </div>
     </div>
 </template>

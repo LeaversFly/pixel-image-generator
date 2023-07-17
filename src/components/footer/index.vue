@@ -1,6 +1,6 @@
 <template>
     <div class="footer">
-        这里是底栏
+        Created by Gincork
     </div>
 </template>
 
@@ -10,8 +10,11 @@
 
 <style lang="scss" scoped>
 .footer {
-    height: 52px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 51px;
 
-    background-color: grey;
+    border-top: 1px solid #E1E5ED;
 }
 </style>
