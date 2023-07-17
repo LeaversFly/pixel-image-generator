@@ -1,12 +1,12 @@
 const themeOverrides = {
     common: {
         primaryColor: '#e66061',
-        primaryColorHover: '#CF523A',
+        primaryColorHover: '#f77173',
         primaryColorPressed: '#e66061',
-        primaryColorSuppl: '#4098FC'
+        primaryColorSuppl: '#e66061'
     },
     Button: {
-        textColor: '#FF0000'
+        textColorPressed: '#e66061'
     }
 }
 
